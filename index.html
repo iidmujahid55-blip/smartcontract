@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Storage DApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="max-w-lg mx-auto px-4 py-8">
+        
+        <!-- Header -->
+        <header class="text-center my-8">
+            <h1 class="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
+                <i class="fas fa-cube text-purple-400"></i> Simple Storage
+            </h1>
+            <p class="text-gray-400 text-sm my-2">Smart Contract on Sepolia</p>
+            <div id="global-status" class="my-2 inline-block px-3 py-1 rounded-full text-sm bg-gray-700 text-gray-300">
+                Disconnected
+            </div>
+        </header>
+
+        <!-- Connect Button -->
+        <div class="text-center mb-6">
+            <button id="connectButton" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold inline-flex items-center gap-2 transition-all">
+                <i class="fas fa-plug"></i> Connect Wallet
+            </button>
+            <button id="disconnectButton" class="bg-red-500/20 text-red-400 border border-red-500/50 px-6 py-3 rounded-xl font-semibold inline-flex items-center gap-2 hover:bg-red-500/30 transition-all" style="display: none;">
+                <i class="fas fa-power-off"></i> Disconnect
+            </button>
+        </div>
+
+        <div id="status-message" class="text-center mb-6 min-h-6"></div>
+
+        <!-- Wallet Info Card -->
+        <div id="wallet-info" class="bg-gray-800 rounded-2xl p-6 shadow-xl mb-6" style="display: none;">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-green-400 text-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i> Connected
+                </h2>
+                <div id="network-display" class="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <div class="text-gray-400 text-xs mb-1">Address</div>
+                    <div id="address-display" class="text-white font-mono text-xs truncate"></div>
+                </div>
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <div class="text-gray-400 text-xs mb-1">Balance</div>
+                    <div id="balance-display" class="text-white font-medium text-sm">0 ETH</div>
+                </div>
+            </div>
+
+            <!-- Network Switcher -->
+            <div class="mt-4 bg-gray-700/50 rounded-lg p-3">
+                <div class="text-gray-400 text-xs mb-2 flex items-center gap-2">
+                    <i class="fas fa-network-wired"></i> Switch Network
+                </div>
+                <select id="network-selector" onchange="switchNetwork(this.value)" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
+                    <optgroup label="Mainnet">
+                        <option value="ethereum">🔷 Ethereum Mainnet</option>
+                    </optgroup>
+                    <optgroup label="Testnet">
+                        <option value="sepolia" selected>🧪 Sepolia Testnet</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div id="status-display" class="hidden">Connected</div>
+        </div>
+
+        <!-- Smart Contract Section -->
+        <div id="contract-section" class="space-y-4" style="display: none;">
+            
+            <!-- Current Value Display -->
+            <div class="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-2xl p-6 border border-purple-500/30">
+                <div class="text-center">
+                    <div class="text-gray-400 text-sm mb-2">Stored Number</div>
+                    <div id="stored-value" class="text-5xl font-bold text-white mb-4">-</div>
+                    <button id="retrieveBtn" class="bg-purple-500/20 text-purple-300 px-4 py-2 rounded-lg text-sm hover:bg-purple-500/30 transition-all inline-flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Store New Value -->
+            <div class="bg-gray-800 rounded-2xl p-6">
+                <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-save text-blue-400"></i> Store New Number
+                </h3>
+                <div class="flex gap-3">
+                    <input 
+                        type="number" 
+                        id="numberInput" 
+                        placeholder="Enter a number"
+                        class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    <button id="storeBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Store
+                    </button>
+                </div>
+                <p class="text-gray-500 text-xs mt-3">
+                    <i class="fas fa-gas-pump"></i> This transaction requires gas fee
+                </p>
+            </div>
+
+            <!-- Contract Info -->
+            <div class="bg-gray-800/50 rounded-xl p-4 text-center">
+                <div class="text-gray-500 text-xs">Contract Address</div>
+                <a href="https://sepolia.etherscan.io/address/0x723C53af5D645f15FcE4884C65202354F369977f" target="_blank" class="text-blue-400 text-xs font-mono hover:text-blue-300 break-all">
+                    0x723C53af5D645f15FcE4884C65202354F369977f
+                </a>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="bg-gray-800 rounded-2xl p-6">
+                <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-history text-purple-400"></i> Transaction History
+                </h3>
+                
+                <!-- Filters -->
+                <div id="tx-filters" class="flex flex-wrap gap-2 mb-4" style="display: none;">
+                    <button onclick="applyFilter('all')" data-filter="all" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500 text-white transition-all">
+                        <i class="fas fa-list mr-1"></i> All
+                    </button>
+                    <button onclick="applyFilter('mine')" data-filter="mine" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all">
+                        <i class="fas fa-user mr-1"></i> My Txns
+                    </button>
+                    <button onclick="applyFilter('success')" data-filter="success" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all">
+                        <i class="fas fa-check mr-1"></i> Success
+                    </button>
+                    <button onclick="applyFilter('failed')" data-filter="failed" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all">
+                        <i class="fas fa-times mr-1"></i> Failed
+                    </button>
+                </div>
+                
+                <div id="tx-loading" class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin text-purple-400"></i>
+                    <span class="text-gray-400 text-sm ml-2">Loading...</span>
+                </div>
+                <div id="tx-list" class="space-y-3" style="display: none;"></div>
+                <div id="tx-empty" class="text-center py-4 text-gray-500 text-sm" style="display: none;">
+                    No transactions yet
+                </div>
+                
+                <!-- Pagination -->
+                <div id="tx-pagination" class="flex items-center justify-center gap-2 mt-4" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Disconnected State -->
+        <div id="disconnected-state" class="bg-gray-800/50 border border-dashed border-gray-600 rounded-2xl py-12 px-6 text-center">
+            <i class="fas fa-wallet text-4xl text-gray-500 mb-4"></i>
+            <p class="text-gray-400">Connect your MetaMask wallet to interact with the contract</p>
+        </div>
+
+    </div>
+
+    <!-- Scripts (order matters!) -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/connect.js"></script>
+    <script src="js/contract.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/wallet.js"></script>
+</body>
+</html>
